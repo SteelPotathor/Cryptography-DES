@@ -171,8 +171,8 @@ public class DES {
 
     int[] decalle_gauche(int[] bloc, int nbCran) {
         int[] res = new int[bloc.length];
-        for (int i = 0; i < nbCran; i++) {
-            
+        for (int i = 0; i < bloc.length; i++) {
+            res[(bloc.length + (i - nbCran)) % bloc.length] = bloc[i];
         }
         return res;
     }
