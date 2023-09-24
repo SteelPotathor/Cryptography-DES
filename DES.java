@@ -123,7 +123,7 @@ public class DES {
         return res;
     }
 
-    String bitsToString(int[] blocs) {
+    public String bitsToString(int[] blocs) {
         String binary = new String();
         for (int i = 0; i < blocs.length; i++) {
             binary += (char) (blocs[i] + '0');
@@ -154,11 +154,22 @@ public class DES {
     }
 
     int[] invPermutation(int[] tab_permutation, int[] bloc) {
-        return null;
+        int[] res = new int[bloc.length];
+        for (int i = 0; i < bloc.length; i++) {
+            res[tab_permutation[i]] = bloc[i];
+        }
+        return res;
     }
 
     int[][] decoupage(int[] bloc, int nbBlocs) {
-        return null;
+        int taille_sous_bloc = bloc.length / nbBlocs;
+        int[][] res = new int[nbBlocs][taille_sous_bloc];
+        for (int i = 0; i < nbBlocs; i++) {
+            for (int j = 0; j < taille_sous_bloc; j++) {
+                res[i][j] = bloc[i * taille_sous_bloc + j];
+            }
+        }
+        return res;
     }
 
     int[] recollage_bloc(int[][] blocs) {
@@ -213,10 +224,17 @@ public class DES {
 
     public static void main(String[] args) {
         DES d = new DES();
-        int[] b1 = {0, 1, 2, 3, 4, 5, 6, 7};
-        int[] b = {0, 1, 2, 3};
-        int[] decallage = d.decalle_gauche(b, 3);
-        System.out.println(d.affiche_tableau(decallage));
-
+        // Exceptions? respect des contraintes???
+        int nb = 10;
+        int[] bloc= d.generePermutation(64);
+        int taille_sous_blocs = bloc.length / nb;
+        int[][] res = d.decoupage(bloc, 10);
+        System.out.println(d.affiche_tableau(bloc));
+        for(int i=0; i<nb; i++) {
+            for (int j=0; j<taille_sous_blocs; j++) {
+                System.out.print(res[i][j] + " ");
+            }
+            System.out.println();
+        }
     }
 }
