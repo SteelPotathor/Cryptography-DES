@@ -4,9 +4,10 @@ import java.util.Random;
 public class TestDes {
     Random random = new Random();
     DES des = new DES();
-
+    // test sur les entrees
     void testInvPermutation(int nombreTest) {
         //return ou affichage??? => demandez au prof
+        // Affichage OK mais expliciter ce que l'on teste
         int i = 0;
         int cnt = 0;
         while (i < nombreTest) {

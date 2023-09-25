@@ -1,5 +1,5 @@
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Random;
 
 public class DES {
     final int TAILLE_BLOC = 64;
@@ -173,11 +173,48 @@ public class DES {
     }
 
     int[] recollage_bloc(int[][] blocs) {
-        return null;
+        int nb_blocs = blocs.length;
+        int taille_bloc = blocs[0].length;
+        int[] res = new int[nb_blocs * taille_bloc];
+        for (int i = 0; i < nb_blocs; i++) {
+            for (int j = 0; j < taille_bloc; j++) {
+                res[i * taille_bloc + j] = blocs[i][j];
+            }
+        }
+        return res;
     }
 
     void genereCle(int n) {
+        int[] permutation = generePermutation(masterKey.length);
+        int[] clePermute = permutation(permutation, masterKey);
+        int[] res = new int[56];
+        int decalle1 = 0;
+        for (int i = 0; i < masterKey.length; i++) {
+            if (i != 8 || i != 16 || i != 24 || i != 32 || i != 40 || i != 48 || i != 56 || i != 64) {
+                res[i - decalle1] = clePermute[i];
+            } else {
+                decalle1++;
+            }
 
+        }
+        int[][] blocs_decoupes = decoupage(res, 2);
+        int[] bloc1 = decalle_gauche(blocs_decoupes[0], this.TAB_DECALAGE[n]);
+        int[] bloc2 = decalle_gauche(blocs_decoupes[1], this.TAB_DECALAGE[n]);
+        int[][] blocs_groupe = new int[2][];
+        blocs_groupe[0] = bloc1;
+        blocs_groupe[1] = bloc2;
+        int[] bloc_recolle = recollage_bloc(blocs_groupe);
+        int[] bloc_48_bits = new int[48];
+        int decalle2 = 0;
+        for (int i = 0; i < 48; i++) {
+            if (i != 9 || i != 18 || i != 22 || i != 25 || i != 35 || i != 38 || i != 43 || i != 54) {
+                bloc_48_bits[i - decalle2] = bloc_recolle[i];
+            } else {
+                decalle2++;
+            }
+        }
+        int[] finalKey = permutation(PC2, bloc_48_bits);
+        this.tab_cles[0] = finalKey;
     }
 
     int[] decalle_gauche(int[] bloc, int nbCran) {
@@ -225,13 +262,14 @@ public class DES {
     public static void main(String[] args) {
         DES d = new DES();
         // Exceptions? respect des contraintes???
+        // javadoc peut remplacer la plupart des commentaires
         int nb = 10;
-        int[] bloc= d.generePermutation(64);
+        int[] bloc = d.generePermutation(64);
         int taille_sous_blocs = bloc.length / nb;
         int[][] res = d.decoupage(bloc, 10);
         System.out.println(d.affiche_tableau(bloc));
-        for(int i=0; i<nb; i++) {
-            for (int j=0; j<taille_sous_blocs; j++) {
+        for (int i = 0; i < nb; i++) {
+            for (int j = 0; j < taille_sous_blocs; j++) {
                 System.out.print(res[i][j] + " ");
             }
             System.out.println();
