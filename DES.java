@@ -103,7 +103,7 @@ public class DES {
             {27, 28, 29, 30, 31, 0}
     };
     int[] masterKey;
-    int[] tab_cles;
+    int[][] tab_cles;
     Random random = new Random();
 
     public DES() {
@@ -111,7 +111,7 @@ public class DES {
         for (int i = 0; i < 64; i++) {
             this.masterKey[i] = random.nextInt(0, 2);
         }
-        this.tab_cles = new int[16];
+        this.tab_cles = new int[16][];
     }
 
     int[] stringToBits(String message) {
@@ -184,7 +184,7 @@ public class DES {
         return res;
     }
 
-    void genereCle(int n) {
+    void genereMasterKey(int n) {
         int[] permutation = generePermutation(masterKey.length);
         int[] clePermute = permutation(permutation, masterKey);
         int[] res = new int[56];
@@ -226,7 +226,25 @@ public class DES {
     }
 
     int[] fonction_S(int[] tab) {
-        return null;
+        if (tab.length != 6) {
+            System.out.print("erreur");
+        }
+        int noLigne = tab[0] << 1 | tab[5];
+        System.out.println(noLigne);
+        int noColonne = tab[1] << 3 | tab[2] << 2 | tab[3] << 1 | tab[4];
+        System.out.println(noColonne);
+        int number = this.S[0][noLigne][noColonne];
+        System.out.println(this.S[0][noLigne][noColonne]);
+        int[] res = new int[4];
+        int i = 0;
+        while (number > 0) {
+            res[i] = number % 2;
+            number /= 2;
+        }
+        for (int j= 0; j<4; j++) {
+            System.out.print(res[j]);
+        }
+        return res;
     }
 
     int[] fonction_F(int[] uneCle, int[] unD) {
@@ -274,5 +292,6 @@ public class DES {
             }
             System.out.println();
         }
+        System.out.println(d.fonction_S(new int[]{1, 0, 1, 0, 1, 0}));
     }
 }
