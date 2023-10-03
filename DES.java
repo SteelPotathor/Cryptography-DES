@@ -117,7 +117,7 @@ public class DES {
     /**
      * Translate a String in a String containing only 0 and 1 (it is the binary representation of the initial String). The translation is stored character by character in an array after being converted to int.
      *
-     * @param  message the string to be converted
+     * @param message the string to be converted
      */
     public int[] stringToBits(String message) {
         // Translate the message in binary
@@ -133,9 +133,9 @@ public class DES {
     }
 
     /**
-     * Translate an array of int containing only 0 and 1 to a String. It concatenates all the elements of the array and converts the resulting binary String to a human-readable String. In fact, it is the reverse of the previous method.
+     * Translate an array of int containing only 0 and 1 to a String. It concatenates all the elements of the array and converts the resulting binary String to a human-readable String. In fact, it is the reverse of the previous method (stringToBits).
      *
-     * @param  blocs the array of int to be converted
+     * @param blocs the array of int to be converted
      */
     public String bitsToString(int[] blocs) {
         // Concatenate all the elements of the array
@@ -148,11 +148,18 @@ public class DES {
         return new String(new BigInteger(binary.toString(), 2).toByteArray());
     }
 
+    /**
+     * Returns an array of int and its length is taille, each int is unique (from 0 to taille - 1 included) and is located at a random index.
+     *
+     * @param taille the size of the permuted array
+     */
     public int[] generePermutation(int taille) {
+        // Create an array of length taille and fill it with the numbers from 0 to taille - 1 included (array[i] = i)
         int[] res = new int[taille];
         for (int i = 0; i < taille; i++) {
             res[i] = i;
         }
+        // Shuffle the array (randomly permute the elements of the array)
         for (int i = 0; i < taille; i++) {
             int randomIndex = random.nextInt(taille);
             int cache = res[randomIndex];
@@ -162,14 +169,27 @@ public class DES {
         return res;
     }
 
+    /**
+     * Returns an array of int which is the result of the array bloc permuted according to tab_permutation.
+     *
+     * @param tab_permutation an array created by the method generePermutation
+     * @param bloc            an array of int
+     */
     public int[] permutation(int[] tab_permutation, int[] bloc) {
         int[] res = new int[tab_permutation.length];
+        // Permute the elements of bloc according to tab_permutation and store the result in res
         for (int i = 0; i < tab_permutation.length; i++) {
             res[i] = bloc[tab_permutation[i]];
         }
         return res;
     }
 
+    /**
+     * Returns an array of int which is the result of the reverse of the previous method (permutation).
+     *
+     * @param tab_permutation an array created by the method generePermutation
+     * @param bloc            an array of int
+     */
     public int[] invPermutation(int[] tab_permutation, int[] bloc) {
         int[] res = new int[bloc.length];
         for (int i = 0; i < bloc.length; i++) {
@@ -178,6 +198,12 @@ public class DES {
         return res;
     }
 
+    /**
+     * Cut an array bloc in nbBlocs of equal size.
+     *
+     * @param bloc    an array of int
+     * @param nbBlocs an array of int
+     */
     public int[][] decoupage(int[] bloc, int nbBlocs) {
         int taille_sous_bloc = bloc.length / nbBlocs;
         int[][] res = new int[nbBlocs][taille_sous_bloc];
@@ -189,6 +215,11 @@ public class DES {
         return res;
     }
 
+    /**
+     * Returns the transformation of a 2D array to a 1D array.
+     *
+     * @param blocs    a 2D array of int
+     */
     public int[] recollage_bloc(int[][] blocs) {
         int nb_blocs = blocs.length;
         int taille_bloc = blocs[0].length;
