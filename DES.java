@@ -2,13 +2,13 @@ import java.math.BigInteger;
 import java.util.Random;
 
 public class DES {
-    final int TAILLE_BLOC = 64;
-    final int TAILLE_SOUS_BLOC = 32;
-    final int NB_RONDE = 1;
-    final int[] TAB_DECALAGE = {
+    public static final int TAILLE_BLOC = 64;
+    public static final int TAILLE_SOUS_BLOC = 32;
+    public static final int NB_RONDE = 1;
+    public static final int[] TAB_DECALAGE = {
             1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1
     };
-    final int[][] PERM_INITIALE = {
+    public static final int[][] PERM_INITIALE = {
             {57, 49, 41, 33, 25, 17, 9, 1},
             {59, 51, 43, 35, 27, 19, 11, 3},
             {61, 53, 45, 37, 29, 21, 13, 5},
@@ -20,7 +20,7 @@ public class DES {
     };
 
 
-    final int[] PC1 = new int[]
+    public static final int[] PC1 = new int[]
             {56, 48, 40, 32, 24, 16, 8,
                     0, 57, 49, 41, 33, 25, 17,
                     9, 1, 58, 50, 42, 34, 26,
@@ -30,7 +30,7 @@ public class DES {
                     13, 5, 60, 52, 44, 36, 28,
                     20, 12, 4, 27, 19, 11, 3};
 
-    final int[] PC2 = new int[]
+    public static final int[] PC2 = new int[]
             {13, 16, 10, 23, 0, 4,
                     2, 27, 14, 5, 20, 9,
                     22, 18, 11, 3, 25, 7,
@@ -41,7 +41,7 @@ public class DES {
                     45, 41, 49, 35, 28, 31};
 
 
-    final int[][][] S = {
+    public static final int[][][] S = {
             {
                     {14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7},
                     {0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8},
@@ -92,7 +92,7 @@ public class DES {
                     {2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11}
             }
     };
-    final int[][] E = {
+    public static final int[][] E = {
             {31, 0, 1, 2, 3, 4},
             {3, 4, 5, 6, 7, 8},
             {7, 8, 9, 10, 11, 12},
@@ -102,9 +102,9 @@ public class DES {
             {23, 24, 25, 26, 27, 28},
             {27, 28, 29, 30, 31, 0}
     };
-    int[] masterKey;
-    int[][] tab_cles;
-    Random random = new Random();
+    public int[] masterKey;
+    public int[][] tab_cles;
+    public Random random = new Random();
 
     public DES() {
         this.masterKey = new int[64];
@@ -114,24 +114,41 @@ public class DES {
         this.tab_cles = new int[16][];
     }
 
-    int[] stringToBits(String message) {
+    /**
+     * Translate a String in a String containing only 0 and 1 (it is the binary representation of the initial String). The translation is stored character by character in an array after being converted to int.
+     *
+     * @param  message the string to be converted
+     */
+    public int[] stringToBits(String message) {
+        // Translate the message in binary
         String binary = new BigInteger(message.getBytes()).toString(2);
+
+        // Store the binary representation in an array
         int[] res = new int[binary.length()];
         for (int i = 0; i < binary.length(); i++) {
+            // Convert the char to int
             res[i] = Character.getNumericValue(binary.charAt(i));
         }
         return res;
     }
 
+    /**
+     * Translate an array of int containing only 0 and 1 to a String. It concatenates all the elements of the array and converts the resulting binary String to a human-readable String. In fact, it is the reverse of the previous method.
+     *
+     * @param  blocs the array of int to be converted
+     */
     public String bitsToString(int[] blocs) {
-        String binary = new String();
-        for (int i = 0; i < blocs.length; i++) {
-            binary += (char) (blocs[i] + '0');
+        // Concatenate all the elements of the array
+        StringBuilder binary = new StringBuilder();
+        for (int bloc : blocs) {
+            binary.append((char) (bloc + '0'));
         }
-        return new String(new BigInteger(binary, 2).toByteArray());
+
+        // Convert the binary String to a human-readable String
+        return new String(new BigInteger(binary.toString(), 2).toByteArray());
     }
 
-    int[] generePermutation(int taille) {
+    public int[] generePermutation(int taille) {
         int[] res = new int[taille];
         for (int i = 0; i < taille; i++) {
             res[i] = i;
@@ -145,7 +162,7 @@ public class DES {
         return res;
     }
 
-    int[] permutation(int[] tab_permutation, int[] bloc) {
+    public int[] permutation(int[] tab_permutation, int[] bloc) {
         int[] res = new int[tab_permutation.length];
         for (int i = 0; i < tab_permutation.length; i++) {
             res[i] = bloc[tab_permutation[i]];
@@ -153,7 +170,7 @@ public class DES {
         return res;
     }
 
-    int[] invPermutation(int[] tab_permutation, int[] bloc) {
+    public int[] invPermutation(int[] tab_permutation, int[] bloc) {
         int[] res = new int[bloc.length];
         for (int i = 0; i < bloc.length; i++) {
             res[tab_permutation[i]] = bloc[i];
@@ -161,7 +178,7 @@ public class DES {
         return res;
     }
 
-    int[][] decoupage(int[] bloc, int nbBlocs) {
+    public int[][] decoupage(int[] bloc, int nbBlocs) {
         int taille_sous_bloc = bloc.length / nbBlocs;
         int[][] res = new int[nbBlocs][taille_sous_bloc];
         for (int i = 0; i < nbBlocs; i++) {
@@ -172,7 +189,7 @@ public class DES {
         return res;
     }
 
-    int[] recollage_bloc(int[][] blocs) {
+    public int[] recollage_bloc(int[][] blocs) {
         int nb_blocs = blocs.length;
         int taille_bloc = blocs[0].length;
         int[] res = new int[nb_blocs * taille_bloc];
@@ -184,7 +201,7 @@ public class DES {
         return res;
     }
 
-    void genereMasterKey(int n) {
+    public void genereMasterKey(int n) {
         int[] permutation = generePermutation(masterKey.length);
         int[] clePermute = permutation(permutation, masterKey);
         int[] res = new int[56];
@@ -217,7 +234,7 @@ public class DES {
         this.tab_cles[0] = finalKey;
     }
 
-    int[] decalle_gauche(int[] bloc, int nbCran) {
+    public int[] decalle_gauche(int[] bloc, int nbCran) {
         int[] res = new int[bloc.length];
         for (int i = 0; i < bloc.length; i++) {
             res[(bloc.length + (i - nbCran)) % bloc.length] = bloc[i];
@@ -225,7 +242,9 @@ public class DES {
         return res;
     }
 
-    int[] fonction_S(int[] tab) {
+    public int[] fonction_S(int[] tab) {
+        // à revoir
+
         if (tab.length != 6) {
             System.out.print("erreur");
         }
@@ -241,34 +260,42 @@ public class DES {
             res[i] = number % 2;
             number /= 2;
         }
-        for (int j= 0; j<4; j++) {
+        for (int j = 0; j < 4; j++) {
             System.out.print(res[j]);
         }
         return res;
     }
 
-    int[] fonction_F(int[] uneCle, int[] unD) {
+    public int[] fonction_F(int[] uneCle, int[] unD) {
         return null;
     }
 
 
-    int[] xor(int[] tab1, int[] tab2) {
+    /**
+     * Apply the bitwise operator XOR between the two arrays, indexes by indexes. It returns a new array containing the result of the XOR.
+     *
+     * @param tab1 the first array to be XORed with the second one
+     * @param tab2 the second array to be XORed with the first one
+     */
+    public int[] xor(int[] tab1, int[] tab2) {
         int[] res = new int[tab1.length];
+        // XOR between the two arrays, indexes by indexes and store it in the new array
         for (int i = 0; i < tab1.length; i++) {
+            // ^ is the XOR operator
             res[i] = tab1[i] ^ tab2[i];
         }
         return res;
     }
 
-    int[] crypte(String message_clair) {
+    public int[] crypte(String message_clair) {
         return null;
     }
 
-    String decrypte(int[] messageCodé) {
+    public String decrypte(int[] messageCodé) {
         return null;
     }
 
-    String affiche_tableau(int[] tableau) {
+    public String affiche_tableau(int[] tableau) {
         String s = new String();
         for (int i = 0; i < tableau.length; i++) {
             s += tableau[i] + " ";
