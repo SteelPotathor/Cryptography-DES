@@ -1,4 +1,5 @@
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Random;
 
 public class DES {
@@ -92,32 +93,39 @@ public class DES {
                     {2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11}
             }
     };
-    public static final int[][] E = {
-            {31, 0, 1, 2, 3, 4},
-            {3, 4, 5, 6, 7, 8},
-            {7, 8, 9, 10, 11, 12},
-            {11, 12, 13, 14, 15, 16},
-            {15, 16, 17, 18, 19, 20},
-            {19, 20, 21, 22, 23, 24},
-            {23, 24, 25, 26, 27, 28},
-            {27, 28, 29, 30, 31, 0}
+    public static final int[] E = {
+            31, 0, 1, 2, 3, 4,
+            3, 4, 5, 6, 7, 8,
+            7, 8, 9, 10, 11, 12,
+            11, 12, 13, 14, 15, 16,
+            15, 16, 17, 18, 19, 20,
+            19, 20, 21, 22, 23, 24,
+            23, 24, 25, 26, 27, 28,
+            27, 28, 29, 30, 31, 0
     };
     public int[] masterKey;
     public int[][] tab_cles;
     public Random random = new Random();
 
+
+    /**
+     * Constructor of the class DES. It generates a random master key of 64 bits. It also creates an array (tab_cles) of 16 sub-keys of 48 bits each.
+     */
     public DES() {
         this.masterKey = new int[64];
         for (int i = 0; i < 64; i++) {
             this.masterKey[i] = random.nextInt(0, 2);
         }
-        this.tab_cles = new int[16][];
+        this.tab_cles = new int[16][48];
     }
 
     /**
      * Translate a String in a String containing only 0 and 1 (it is the binary representation of the initial String). The translation is stored character by character in an array after being converted to int.
      *
-     * @param message the string to be converted
+     * @param message the string to be converted.
+     * @return an array of int containing only 0 and 1 (it is the binary representation of the initial String).
+     * @throws NumberFormatException if message is an empty string.
+     * @throws NullPointerException  if message is null.
      */
     public int[] stringToBits(String message) {
         // Translate the message in binary
@@ -135,7 +143,10 @@ public class DES {
     /**
      * Translate an array of int containing only 0 and 1 to a String. It concatenates all the elements of the array and converts the resulting binary String to a human-readable String. In fact, it is the reverse of the previous method (stringToBits).
      *
-     * @param blocs the array of int to be converted
+     * @param blocs the array of int to be converted into String.
+     * @return a String translation of the array blocs (binary) in human-readable format.
+     * @throws NumberFormatException if blocs is an array of length 0.
+     * @throws NullPointerException  if blocs is null.
      */
     public String bitsToString(int[] blocs) {
         // Concatenate all the elements of the array
@@ -149,11 +160,17 @@ public class DES {
     }
 
     /**
-     * Returns an array of int and its length is taille, each int is unique (from 0 to taille - 1 included) and is located at a random index.
+     * Create an array of length taille and fill it with the numbers from 0 to taille - 1 included (array[i] = i). Then, it randomly permutes the elements of the array and returns it.
      *
-     * @param taille the size of the permuted array
+     * @param taille the size of the permuted array.
+     * @return an array of int (length = taille), each int is unique (from 0 to taille - 1 both included) and is located at a random index.
+     * @throws IllegalArgumentException if taille is negative.
      */
     public int[] generePermutation(int taille) {
+        // Preconditions
+        if (taille < 0) {
+            throw new IllegalArgumentException("The size of the array must be positive: " + taille + " < 0.");
+        }
         // Create an array of length taille and fill it with the numbers from 0 to taille - 1 included (array[i] = i)
         int[] res = new int[taille];
         for (int i = 0; i < taille; i++) {
@@ -170,12 +187,20 @@ public class DES {
     }
 
     /**
-     * Returns an array of int which is the result of the array bloc permuted according to tab_permutation.
+     * Shuffle bloc according to tab_permutation (The element at the index i of bloc will be moved to the index tab_permutation[i] of the returning array). The two arrays must be of equal size.
      *
-     * @param tab_permutation an array created by the method generePermutation
-     * @param bloc            an array of int
+     * @param tab_permutation the array created by the method generePermutation.
+     * @param bloc            the array of int to be permuted.
+     * @return an array of int resulting from the permutation of the elements of the array bloc according to tab_permutation.
+     * @throws NullPointerException     if tab_permutation or bloc is null.
+     * @throws IllegalArgumentException if tab_permutation.length != bloc.length.
      */
     public int[] permutation(int[] tab_permutation, int[] bloc) {
+        // Preconditions
+        if (tab_permutation.length != bloc.length) {
+            throw new IllegalArgumentException("The length of tab_permutation must be equal to the length of bloc: " + tab_permutation.length + " != " + bloc.length + ".");
+        }
+
         int[] res = new int[tab_permutation.length];
         // Permute the elements of bloc according to tab_permutation and store the result in res
         for (int i = 0; i < tab_permutation.length; i++) {
@@ -185,13 +210,23 @@ public class DES {
     }
 
     /**
-     * Returns an array of int which is the result of the reverse of the previous method (permutation).
+     * The reverse of the previous method (permutation). It cancels the permutation of the array bloc according to tab_permutation. The two arrays must be of equal size.
      *
-     * @param tab_permutation an array created by the method generePermutation
-     * @param bloc            an array of int
+     * @param tab_permutation the array created by the method generePermutation.
+     * @param bloc            the array of int to be reverse-permuted.
+     * @return an array where the permutation has been reversed.
+     * @throws ArrayIndexOutOfBoundsException if tab_permutation[i] >= bloc.length || tab_permutation[i] < 0.
+     * @throws NullPointerException           if tab_permutation or bloc is null.
+     * @throws IllegalArgumentException       if tab_permutation.length != bloc.length.
      */
     public int[] invPermutation(int[] tab_permutation, int[] bloc) {
+        // Preconditions
+        if (tab_permutation.length != bloc.length) {
+            throw new IllegalArgumentException("The length of tab_permutation must be equal to the length of bloc: " + tab_permutation.length + " != " + bloc.length + ".");
+        }
+
         int[] res = new int[bloc.length];
+        // Reverse-permute the elements of bloc according to tab_permutation and store the result in res
         for (int i = 0; i < bloc.length; i++) {
             res[tab_permutation[i]] = bloc[i];
         }
@@ -199,55 +234,79 @@ public class DES {
     }
 
     /**
-     * Cut an array bloc in nbBlocs of equal size.
+     * Cut an array bloc in nbBlocs of "equal size" and store sub-blocs in a 2D array. This method will only be used if nbBlocs is a multiple of bloc.length. Moreover, nbBlocs must be positive and less than the length of bloc.
      *
-     * @param bloc    an array of int
-     * @param nbBlocs an array of int
+     * @param bloc    the array of int to be cut.
+     * @param nbBlocs the number of blocs to be created. It must be positive and less than the length of bloc.
+     * @return a 2D array of int containing nbBlocs sub-blocs of equal size such that the index i of the 2D array represents the sub-bloc i.
+     * @throws NullPointerException     if bloc is null.
+     * @throws IllegalArgumentException if nbBlocs > bloc.length || nbBlocs <= 0.
      */
     public int[][] decoupage(int[] bloc, int nbBlocs) {
-        int taille_sous_bloc = bloc.length / nbBlocs;
+        // Preconditions
+        if (nbBlocs > bloc.length) {
+            throw new IllegalArgumentException("The number of blocs must be less than the length of bloc: " + nbBlocs + " > " + bloc.length + ".");
+        }
+        if (nbBlocs <= 0) {
+            throw new IllegalArgumentException("The number of blocs must be positive: " + nbBlocs + " <= 0.");
+        }
+        int taille_sous_bloc = (int) Math.ceil((double) bloc.length / nbBlocs);
         int[][] res = new int[nbBlocs][taille_sous_bloc];
+        // Cut the array bloc in nbBlocs of equal size and store every sub-bloc in the 2D array res
         for (int i = 0; i < nbBlocs; i++) {
-            for (int j = 0; j < taille_sous_bloc; j++) {
-                res[i][j] = bloc[i * taille_sous_bloc + j];
-            }
+            // Copy the bloc from bloc[i * taille_sous_bloc] to bloc[i * taille_sous_bloc + taille_sous_bloc - 1] included and store it in res[i]
+            System.arraycopy(bloc, i * taille_sous_bloc, res[i], 0, taille_sous_bloc);
         }
         return res;
     }
 
     /**
-     * Returns the transformation of a 2D array to a 1D array.
+     * The reverse of the previous method (decoupage). It concatenates all the arrays into one.
      *
-     * @param blocs    a 2D array of int
+     * @param blocs the 2D array of int to be concatenated.
+     * @return a 1D array which is the concatenation of all the arrays contained in blocs.
+     * @throws NullPointerException if blocs is null.
      */
     public int[] recollage_bloc(int[][] blocs) {
         int nb_blocs = blocs.length;
         int taille_bloc = blocs[0].length;
         int[] res = new int[nb_blocs * taille_bloc];
         for (int i = 0; i < nb_blocs; i++) {
-            for (int j = 0; j < taille_bloc; j++) {
-                res[i * taille_bloc + j] = blocs[i][j];
-            }
+            // Copy the bloc from blocs[i] to res[i * taille_bloc] included and store it in res
+            System.arraycopy(blocs[i], 0, res, i * taille_bloc, taille_bloc);
         }
         return res;
     }
 
+
+    /**
+     * Generate the n-ith key. It is the result of the permutation PC2 applied to the result of the permutation PC1 applied to the master key. The master key is first permuted according to PC1 and then split into two halves. Each half is rotated to the left by a certain number of bits (TAB_DECALAGE[n]). Then, the two halves are concatenated and permuted according to PC2. The result is the n-ith key. It is then stored in the array tab_cles at the index n.
+     *
+     * @param n the index of the key to be generated.
+     * @throws IllegalArgumentException if n < 0 || n > 15.
+     */
     public void genereMasterKey(int n) {
+        // Preconditions
+        if (n < 0 || n > 15) {
+            throw new IllegalArgumentException("The index of the key must be between 0 and 15 included: " + n + " < 0 || " + n + " > 15.");
+        }
         int[] permutation = generePermutation(masterKey.length);
         int[] clePermute = permutation(permutation, masterKey);
         int[] res = new int[56];
         int decalle1 = 0;
         for (int i = 0; i < masterKey.length; i++) {
-            if (i != 8 || i != 16 || i != 24 || i != 32 || i != 40 || i != 48 || i != 56 || i != 64) {
+            if (i != 8 && i != 16 && i != 24 && i != 32 && i != 40 && i != 48 && i != 56 && i != 64) {
                 res[i - decalle1] = clePermute[i];
             } else {
                 decalle1++;
             }
 
         }
+        // Split the array res into two halves
         int[][] blocs_decoupes = decoupage(res, 2);
-        int[] bloc1 = decalle_gauche(blocs_decoupes[0], this.TAB_DECALAGE[n]);
-        int[] bloc2 = decalle_gauche(blocs_decoupes[1], this.TAB_DECALAGE[n]);
+        // Rotate the two halves to the left by a certain number of bits (TAB_DECALAGE[n])
+        int[] bloc1 = decalle_gauche(blocs_decoupes[0], TAB_DECALAGE[n]);
+        int[] bloc2 = decalle_gauche(blocs_decoupes[1], TAB_DECALAGE[n]);
         int[][] blocs_groupe = new int[2][];
         blocs_groupe[0] = bloc1;
         blocs_groupe[1] = bloc2;
@@ -255,60 +314,122 @@ public class DES {
         int[] bloc_48_bits = new int[48];
         int decalle2 = 0;
         for (int i = 0; i < 48; i++) {
-            if (i != 9 || i != 18 || i != 22 || i != 25 || i != 35 || i != 38 || i != 43 || i != 54) {
+            if (i != 9 && i != 18 && i != 22 && i != 25 && i != 35 && i != 38 && i != 43) {
                 bloc_48_bits[i - decalle2] = bloc_recolle[i];
             } else {
                 decalle2++;
             }
         }
         int[] finalKey = permutation(PC2, bloc_48_bits);
-        this.tab_cles[0] = finalKey;
+        this.tab_cles[n] = finalKey;
     }
 
+    /**
+     * Shift/rotate bloc by nbCran to the left.
+     * TESTSTSTSTST????
+     *
+     * @param bloc   the array of int to be shifted
+     * @param nbCran the number of shift to the left
+     * @return a 1D array which is the result of the array bloc shifted/rotated nbCran to the left.
+     * @throws NullPointerException     if bloc is null.
+     * @throws IllegalArgumentException if bloc.length < 1.
+     */
     public int[] decalle_gauche(int[] bloc, int nbCran) {
+        // Preconditions
+        if (bloc.length < 1) {
+            throw new IllegalArgumentException("The length of the array must be positive: " + bloc.length + " < 1.");
+        }
+        nbCran = nbCran % bloc.length;
         int[] res = new int[bloc.length];
+        // Shift the elements of bloc nbCran to the left and store the result in res
         for (int i = 0; i < bloc.length; i++) {
+            // The modulo is used to avoid an index out of bounds
             res[(bloc.length + (i - nbCran)) % bloc.length] = bloc[i];
         }
         return res;
     }
 
-    public int[] fonction_S(int[] tab) {
-        // à revoir
+    /**
+     * Converts a positive int n into its binary representation and store each bit in the returning 1D array. The first element of the array is the most significant bit and the last one is the least significant bit ([1, 0, 1, 0] = 10 for example). We will only use this method with size = 4, but it can be used with any size.
+     *
+     * @param n    the int to be converted (must be positive or equal to 0).
+     * @param size the size of the returning array
+     * @return a 1D array of length size containing the binary representation of n.
+     * @throws IllegalArgumentException if size < 0 or if n < 0.
+     */
+    public int[] intToBinaryArray(int n, int size) {
+        // Preconditions
+        if (n < 0) {
+            throw new IllegalArgumentException("The int to be converted must be positive: " + n + " < 0.");
+        }
+        if (size < 0) {
+            throw new IllegalArgumentException("The size of the array must be positive: " + size + " < 0.");
+        }
 
-        if (tab.length != 6) {
-            System.out.print("erreur");
-        }
-        int noLigne = tab[0] << 1 | tab[5];
-        System.out.println(noLigne);
-        int noColonne = tab[1] << 3 | tab[2] << 2 | tab[3] << 1 | tab[4];
-        System.out.println(noColonne);
-        int number = this.S[0][noLigne][noColonne];
-        System.out.println(this.S[0][noLigne][noColonne]);
-        int[] res = new int[4];
-        int i = 0;
-        while (number > 0) {
-            res[i] = number % 2;
-            number /= 2;
-        }
-        for (int j = 0; j < 4; j++) {
-            System.out.print(res[j]);
+        int[] res = new int[size];
+        for (int i = 0; i < size; i++) {
+            res[size - 1 - i] = n & 1;
+            n >>= 1;
         }
         return res;
     }
 
+    /**
+     * Calculate the value of the array S corresponding to the 6 bits of tab. The first and last bits of tab are used to determine the line of the array S and the 4 bits in the middle are used to determine the column of the S-Box. The result is an int which is then converted in binary and stored in a 1D array of length 4.
+     *
+     * @param tab the array of int to be converted.
+     * @return a 1D array of length 4 containing the binary representation of the int corresponding to a certain line (first and last bit) and column (every other) of the array S.
+     * @throws NullPointerException     if tab is null.
+     * @throws IllegalArgumentException if tab.length != 6.
+     */
+    public int[] fonction_S(int[] tab) {
+        // Preconditions
+        if (tab.length != 6) {
+            throw new IllegalArgumentException("The length of tab must be equal to 6: " + tab.length + " != " + 6 + ".");
+        }
+        // The first and last bits of tab are used to determine the line of the array S
+        int noLigne = tab[0] << 1 | tab[5];
+        // The 4 bits in the middle are used to determine the column of the array S
+        int noColonne = tab[1] << 3 | tab[2] << 2 | tab[3] << 1 | tab[4];
+        // Get the int corresponding to the line noLigne and the column noColonne of the array S
+        int numberToConvert = S[0][noLigne][noColonne];
+        // Convert the int to binary and store it in a 1D array of length 4
+        return intToBinaryArray(numberToConvert, 4);
+    }
+
+
     public int[] fonction_F(int[] uneCle, int[] unD) {
-        return null;
+        // Xor between uneCle and unD
+        int[] resXor = xor(uneCle, unD);
+        // Split the array resXor into 8 sub-blocs of length 6
+        int[][] subBlocs = decoupage(resXor, 8);
+        int[][] res = new int[8][4];
+        // Apply the fonction_S to each sub-bloc and store the result in res
+        for (int i = 0; i < 8; i++) {
+            res[i] = fonction_S(subBlocs[i]);
+        }
+        // Concatenate all the arrays of res into one
+        int[] resConcat = recollage_bloc(res);
+        // Permute the array resConcat according to E
+        return permutation(E, resConcat);
     }
 
 
     /**
      * Apply the bitwise operator XOR between the two arrays, indexes by indexes. It returns a new array containing the result of the XOR.
      *
-     * @param tab1 the first array to be XORed with the second one
-     * @param tab2 the second array to be XORed with the first one
+     * @param tab1 the first array to be XORed with the second one.
+     * @param tab2 the second array to be XORed with the first one.
+     * @return a new array containing the result of the XOR between tab1 and tab2.
+     * @throws NullPointerException     if tab1 or tab2 is null.
+     * @throws IllegalArgumentException if tab1.length != tab2.length.
      */
     public int[] xor(int[] tab1, int[] tab2) {
+        // Preconditions
+        if (tab1.length != tab2.length) {
+            throw new IllegalArgumentException("The length of tab1 must be equal to the length of tab2: " + tab1.length + " != " + tab2.length + ".");
+        }
+
         int[] res = new int[tab1.length];
         // XOR between the two arrays, indexes by indexes and store it in the new array
         for (int i = 0; i < tab1.length; i++) {
@@ -326,30 +447,4 @@ public class DES {
         return null;
     }
 
-    public String affiche_tableau(int[] tableau) {
-        String s = new String();
-        for (int i = 0; i < tableau.length; i++) {
-            s += tableau[i] + " ";
-        }
-        return s;
-    }
-
-
-    public static void main(String[] args) {
-        DES d = new DES();
-        // Exceptions? respect des contraintes???
-        // javadoc peut remplacer la plupart des commentaires
-        int nb = 10;
-        int[] bloc = d.generePermutation(64);
-        int taille_sous_blocs = bloc.length / nb;
-        int[][] res = d.decoupage(bloc, 10);
-        System.out.println(d.affiche_tableau(bloc));
-        for (int i = 0; i < nb; i++) {
-            for (int j = 0; j < taille_sous_blocs; j++) {
-                System.out.print(res[i][j] + " ");
-            }
-            System.out.println();
-        }
-        System.out.println(d.fonction_S(new int[]{1, 0, 1, 0, 1, 0}));
-    }
 }
