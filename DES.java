@@ -1,5 +1,4 @@
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Random;
 
 public class DES {
@@ -103,19 +102,29 @@ public class DES {
             23, 24, 25, 26, 27, 28,
             27, 28, 29, 30, 31, 0
     };
+
+    public static final int[] P = {
+            15, 6, 19, 20, 28, 11, 27, 16,
+            0, 14, 22, 25, 4, 17, 30, 9,
+            1, 7, 23, 13, 31, 26, 2, 8,
+            18, 12, 29, 5, 21, 10, 3, 24
+    };
     public int[] masterKey;
     public int[][] tab_cles;
     public Random random = new Random();
 
 
     /**
-     * Constructor of the class DES. It generates a random master key of 64 bits. It also creates an array (tab_cles) of 16 sub-keys of 48 bits each.
+     * Constructor of the class DES. It generates a random master key of 64 bits (containing only 0 or 1). It also creates an array (tab_cles) of 16 sub-keys of 48 bits each.
      */
     public DES() {
+        // Create a random master key of 64 bits
         this.masterKey = new int[64];
+        // Fill each index of the master key with 0 or 1
         for (int i = 0; i < 64; i++) {
             this.masterKey[i] = random.nextInt(0, 2);
         }
+        // Create an array to store keys
         this.tab_cles = new int[16][48];
     }
 
@@ -160,6 +169,7 @@ public class DES {
     }
 
     /**
+     * DEVIENT GENEREMASTERKEY mais garder celle ci et creer une autre methode
      * Create an array of length taille and fill it with the numbers from 0 to taille - 1 included (array[i] = i). Then, it randomly permutes the elements of the array and returns it.
      *
      * @param taille the size of the permuted array.
@@ -192,15 +202,9 @@ public class DES {
      * @param tab_permutation the array created by the method generePermutation.
      * @param bloc            the array of int to be permuted.
      * @return an array of int resulting from the permutation of the elements of the array bloc according to tab_permutation.
-     * @throws NullPointerException     if tab_permutation or bloc is null.
-     * @throws IllegalArgumentException if tab_permutation.length != bloc.length.
+     * @throws NullPointerException if tab_permutation or bloc is null.
      */
     public int[] permutation(int[] tab_permutation, int[] bloc) {
-        // Preconditions
-        if (tab_permutation.length != bloc.length) {
-            throw new IllegalArgumentException("The length of tab_permutation must be equal to the length of bloc: " + tab_permutation.length + " != " + bloc.length + ".");
-        }
-
         int[] res = new int[tab_permutation.length];
         // Permute the elements of bloc according to tab_permutation and store the result in res
         for (int i = 0; i < tab_permutation.length; i++) {
@@ -285,7 +289,7 @@ public class DES {
      * @param n the index of the key to be generated.
      * @throws IllegalArgumentException if n < 0 || n > 15.
      */
-    public void genereMasterKey(int n) {
+    public void genereCle(int n) {
         // Preconditions
         if (n < 0 || n > 15) {
             throw new IllegalArgumentException("The index of the key must be between 0 and 15 included: " + n + " < 0 || " + n + " > 15.");
@@ -326,7 +330,6 @@ public class DES {
 
     /**
      * Shift/rotate bloc by nbCran to the left.
-     * TESTSTSTSTST????
      *
      * @param bloc   the array of int to be shifted
      * @param nbCran the number of shift to the left
@@ -377,41 +380,55 @@ public class DES {
     /**
      * Calculate the value of the array S corresponding to the 6 bits of tab. The first and last bits of tab are used to determine the line of the array S and the 4 bits in the middle are used to determine the column of the S-Box. The result is an int which is then converted in binary and stored in a 1D array of length 4.
      *
-     * @param tab the array of int to be converted.
-     * @return a 1D array of length 4 containing the binary representation of the int corresponding to a certain line (first and last bit) and column (every other) of the array S.
+     * @param tab     the array of int to be converted.
+     * @param noRonde the index of the round.
+     * @return a 1D array of length 4 containing the binary representation of the int corresponding to a certain line (first and last bit) and column (every other) of the array S at the round noRonde.
      * @throws NullPointerException     if tab is null.
-     * @throws IllegalArgumentException if tab.length != 6.
+     * @throws IllegalArgumentException if tab.length != 6 or noRonde < 0 || noRonde > 15.
      */
-    public int[] fonction_S(int[] tab) {
+    public int[] fonction_S(int[] tab, int noRonde) {
         // Preconditions
         if (tab.length != 6) {
             throw new IllegalArgumentException("The length of tab must be equal to 6: " + tab.length + " != " + 6 + ".");
         }
+        if (noRonde < 0 || noRonde > 15) {
+            throw new IllegalArgumentException("The round must be between 0 and 15 (included): 0 <= " + noRonde + " < 16.");
+        }
         // The first and last bits of tab are used to determine the line of the array S
+        // We shift the first bit of tab to the left by 1. Then we add the last bit of tab
         int noLigne = tab[0] << 1 | tab[5];
         // The 4 bits in the middle are used to determine the column of the array S
+        // We shift the second bit of tab to the left by 3. Then we shift the third bit of tab to the left by 2. Then we shift the fourth bit of tab to the left by 1. Then we add the fifth bit of tab
         int noColonne = tab[1] << 3 | tab[2] << 2 | tab[3] << 1 | tab[4];
         // Get the int corresponding to the line noLigne and the column noColonne of the array S
-        int numberToConvert = S[0][noLigne][noColonne];
+        int numberToConvert = S[noRonde][noLigne][noColonne];
         // Convert the int to binary and store it in a 1D array of length 4
         return intToBinaryArray(numberToConvert, 4);
     }
 
 
-    public int[] fonction_F(int[] uneCle, int[] unD) {
+    /**
+     * @param uneCle
+     * @param unD
+     * @return
+     * @throws NullPointerException     if tab is null.
+     * @throws IllegalArgumentException if tab.length != 6.
+     */
+    public int[] fonction_F(int[] uneCle, int[] unD, int noRonde) {
+        int[] unDprime = permutation(E, unD);
         // Xor between uneCle and unD
-        int[] resXor = xor(uneCle, unD);
+        int[] resXor = xor(uneCle, unDprime);
         // Split the array resXor into 8 sub-blocs of length 6
         int[][] subBlocs = decoupage(resXor, 8);
         int[][] res = new int[8][4];
         // Apply the fonction_S to each sub-bloc and store the result in res
         for (int i = 0; i < 8; i++) {
-            res[i] = fonction_S(subBlocs[i]);
+            res[i] = fonction_S(subBlocs[i], noRonde);
         }
         // Concatenate all the arrays of res into one
         int[] resConcat = recollage_bloc(res);
-        // Permute the array resConcat according to E
-        return permutation(E, resConcat);
+        // Permute the array resConcat according to P
+        return permutation(P, resConcat);
     }
 
 

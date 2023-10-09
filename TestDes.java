@@ -1,7 +1,5 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Random;
 
 public class TestDes {
@@ -94,36 +92,66 @@ public class TestDes {
         }
     }
 
-    public void testIntToBinaryArray() {
-        int[][] result = {
-                {0, 0, 0, 0},
-                {0, 0, 0, 1},
-                {0, 0, 1, 0},
-                {0, 0, 1, 1},
-                {0, 1, 0, 0},
-                {0, 1, 0, 1},
-                {0, 1, 1, 0},
-                {0, 1, 1, 1},
-                {1, 0, 0, 0},
-                {1, 0, 0, 1},
-                {1, 0, 1, 0},
-                {1, 0, 1, 1},
-                {1, 1, 0, 0},
-                {1, 1, 0, 1},
-                {1, 1, 1, 0},
-                {1, 1, 1, 1}
-        };
-        for (int i = 0; i < result.length; i++) {
-            System.out.println(Arrays.equals(des.intToBinaryArray(i, 4), result[i]));
+
+    public void testXor(int nombreTest) {
+        int i = 0;
+        boolean testOk = true;
+        while (i < nombreTest && testOk) {
+            int[] tab = des.generePermutation(64);
+            int[] tab2 = des.generePermutation(64);
+            int[] doubleXor = des.xor(des.xor(tab, tab2), tab2);
+            if (!Arrays.equals(tab, doubleXor)) {
+                System.out.println("Erreur de xor / unxor sur le tableau " + Arrays.toString(tab) + " et " + Arrays.toString(tab2) + ".");
+                testOk = false;
+            } else {
+                i++;
+            }
         }
+        if (i == nombreTest) {
+            System.out.println("La méthode xor fonctionne correctement (le double xor renvoie le tableau initial). \nLe nombre de tests de la fonction xor est de " + nombreTest + ".");
+        }
+    }
+
+    public void testDecallageGauche() {
+        int nbCranMax = 64;
+        for (int nbCran = 1; nbCran < nbCranMax; nbCran++) {
+            int[] tab = des.generePermutation(nbCranMax);
+            int[] res = des.decalle_gauche(tab, nbCran);
+            boolean testOk = true;
+            for (int i = 0; i < nbCranMax - nbCran; i++) {
+                if (res[i] != tab[i + nbCran]) {
+                    testOk = false;
+                }
+            }
+            for (int j = tab.length - nbCran; j < tab.length; j++) {
+                if (res[j] != tab[j - tab.length + nbCran]) {
+                    testOk = false;
+                }
+            }
+            System.out.println("nbCran = " + nbCran + " " + testOk);
+        }
+    }
+
+    public void testFonctionS() {
+
     }
 
     public static void main(String[] args) {
         TestDes testDes = new TestDes();
-        testDes.testPermutationInvPermutation(1000);
+        //testDes.testPermutationInvPermutation(1000);
         //testDes.testStringToBitsToString(100);
         //testDes.testExceptionStringToBits();
         //testDes.testExceptionBitsToString();
         //testDes.testIntToBinaryArray();
+        //testDes.testXor(100);
+        testDes.testDecallageGauche();
     }
+    /* test =>
+    conversion ok
+    perm/invperm ok
+    decallage gauche semi ok
+    xor => xor xor = base ok
+    fonction s
+    crypte decrypte
+     */
 }
