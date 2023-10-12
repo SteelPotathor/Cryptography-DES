@@ -114,22 +114,31 @@ public class TestDes {
 
     public void testDecallageGauche() {
         int nbCranMax = 64;
-        for (int nbCran = 1; nbCran < nbCranMax; nbCran++) {
-            int[] tab = des.generePermutation(nbCranMax);
-            int[] res = des.decalle_gauche(tab, nbCran);
-            boolean testOk = true;
-            for (int i = 0; i < nbCranMax - nbCran; i++) {
-                if (res[i] != tab[i + nbCran]) {
+        int nbCran = 1;
+        boolean testOk = true;
+        int[] tab = null;
+        int[] res = null;
+        while (nbCran < nbCranMax && testOk) {
+            tab = des.generePermutation(nbCranMax);
+            res = des.decalle_gauche(tab, nbCran);
+            for (int ind = 0; ind < nbCranMax - nbCran; ind++) {
+                if (res[ind] != tab[ind + nbCran]) {
                     testOk = false;
                 }
             }
-            for (int j = tab.length - nbCran; j < tab.length; j++) {
-                if (res[j] != tab[j - tab.length + nbCran]) {
+            for (int ind = tab.length - nbCran; ind < tab.length; ind++) {
+                if (res[ind] != tab[ind - tab.length + nbCran]) {
                     testOk = false;
                 }
             }
-            System.out.println("nbCran = " + nbCran + " " + testOk);
+            nbCran++;
         }
+        if (testOk) {
+            System.out.println("La méthode decalle_gauche fonctionne correctement. \nLe nombre de decallage maximum effectué est de " + nbCranMax + ".");
+        }
+        else {
+            System.out.println("Erreur de decallage gauche sur le tableau " + Arrays.toString(tab) + " et " + Arrays.toString(res) + ".");
+        };
     }
 
     public void testFonctionS() {
@@ -149,9 +158,10 @@ public class TestDes {
     /* test =>
     conversion ok
     perm/invperm ok
-    decallage gauche semi ok
+    decallage gauche ok
     xor => xor xor = base ok
-    fonction s
+    fonction s not ok
     crypte decrypte
+    gerer exceptions tests à la fin
      */
 }
