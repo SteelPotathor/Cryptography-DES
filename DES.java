@@ -1,22 +1,23 @@
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Random;
 
 public class DES {
     public static final int TAILLE_BLOC = 64;
     public static final int TAILLE_SOUS_BLOC = 32;
-    public static final int NB_RONDE = 1;
+    public static final int NB_RONDE = 16;
     public static final int[] TAB_DECALAGE = {
             1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1
     };
-    public static final int[][] PERM_INITIALE = {
-            {57, 49, 41, 33, 25, 17, 9, 1},
-            {59, 51, 43, 35, 27, 19, 11, 3},
-            {61, 53, 45, 37, 29, 21, 13, 5},
-            {63, 55, 47, 39, 31, 23, 15, 7},
-            {56, 48, 40, 32, 24, 16, 8, 0},
-            {58, 50, 42, 34, 26, 18, 10, 2},
-            {60, 52, 44, 36, 28, 20, 12, 4},
-            {62, 54, 46, 38, 30, 22, 14, 6}
+    public static final int[] PERM_INITIALE = {
+            57, 49, 41, 33, 25, 17, 9, 1,
+            59, 51, 43, 35, 27, 19, 11, 3,
+            61, 53, 45, 37, 29, 21, 13, 5,
+            63, 55, 47, 39, 31, 23, 15, 7,
+            56, 48, 40, 32, 24, 16, 8, 0,
+            58, 50, 42, 34, 26, 18, 10, 2,
+            60, 52, 44, 36, 28, 20, 12, 4,
+            62, 54, 46, 38, 30, 22, 14, 6
     };
 
 
@@ -240,26 +241,22 @@ public class DES {
     /**
      * Cut an array bloc in nbBlocs of "equal size" and store sub-blocs in a 2D array. This method will only be used if nbBlocs is a multiple of bloc.length. Moreover, nbBlocs must be positive and less than the length of bloc.
      *
-     * @param bloc    the array of int to be cut.
-     * @param nbBlocs the number of blocs to be created. It must be positive and less than the length of bloc.
-     * @return a 2D array of int containing nbBlocs sub-blocs of equal size such that the index i of the 2D array represents the sub-bloc i.
-     * @throws NullPointerException     if bloc is null.
-     * @throws IllegalArgumentException if nbBlocs > bloc.length || nbBlocs <= 0.
+     * @param bloc        the array of int to be cut.
+     * @param tailleBlocs the length of the sub-blocs.
+     * @return a 2D array of int containing nbBlocs sub-blocs of equal size (tailleBlocs) such that the index i of the 2D array represents the sub-bloc i.
+     * @throws IllegalArgumentException if tailleBlocs <= 0.
      */
-    public int[][] decoupage(int[] bloc, int nbBlocs) {
+    public int[][] decoupage(int[] bloc, int tailleBlocs) {
         // Preconditions
-        if (nbBlocs > bloc.length) {
-            throw new IllegalArgumentException("The number of blocs must be less than the length of bloc: " + nbBlocs + " > " + bloc.length + ".");
+        if (tailleBlocs <= 0) {
+            throw new IllegalArgumentException("The length of blocs must be positive: " + tailleBlocs + " <= " + 0 + ".");
         }
-        if (nbBlocs <= 0) {
-            throw new IllegalArgumentException("The number of blocs must be positive: " + nbBlocs + " <= 0.");
-        }
-        int taille_sous_bloc = (int) Math.ceil((double) bloc.length / nbBlocs);
-        int[][] res = new int[nbBlocs][taille_sous_bloc];
+        int nbBlocs = bloc.length / tailleBlocs; // Precondition ou bloc % tailleBlocs = 0 potentiellement
+        int[][] res = new int[nbBlocs][tailleBlocs];
         // Cut the array bloc in nbBlocs of equal size and store every sub-bloc in the 2D array res
         for (int i = 0; i < nbBlocs; i++) {
             // Copy the bloc from bloc[i * taille_sous_bloc] to bloc[i * taille_sous_bloc + taille_sous_bloc - 1] included and store it in res[i]
-            System.arraycopy(bloc, i * taille_sous_bloc, res[i], 0, taille_sous_bloc);
+            System.arraycopy(bloc, i * tailleBlocs, res[i], 0, tailleBlocs);
         }
         return res;
     }
@@ -294,6 +291,20 @@ public class DES {
         if (n < 0 || n > 15) {
             throw new IllegalArgumentException("The index of the key must be between 0 and 15 included: " + n + " < 0 || " + n + " > 15.");
         }
+        // Permute the master key according to PC1
+        int[] permutedKey = permutation(PC1, masterKey);
+        // Split the array permutedKey into two halves
+        int[][] split_permuted_key = decoupage(permutedKey, permutedKey.length / 2);
+        // Rotate the two halves to the left by a certain number of bits (TAB_DECALAGE[n])
+        split_permuted_key[0] = decalle_gauche(split_permuted_key[0], TAB_DECALAGE[n]);
+        split_permuted_key[1] = decalle_gauche(split_permuted_key[1], TAB_DECALAGE[n]);
+        // Concatenate the two halves
+        int[] bloc_recolle = recollage_bloc(split_permuted_key);
+        // Permute the result according to PC2
+        int[] key = permutation(PC2, bloc_recolle);
+        tab_cles[n] = key;
+
+        /*
         int[] permutation = generePermutation(masterKey.length);
         int[] clePermute = permutation(permutation, masterKey);
         int[] res = new int[56];
@@ -326,6 +337,7 @@ public class DES {
         }
         int[] finalKey = permutation(PC2, bloc_48_bits);
         this.tab_cles[n] = finalKey;
+         */
     }
 
     /**
@@ -408,7 +420,6 @@ public class DES {
 
 
     /**
-     * 
      * @param uneCle
      * @param unD
      * @return
@@ -420,11 +431,11 @@ public class DES {
         // Xor between uneCle and unD
         int[] resXor = xor(uneCle, unDprime);
         // Split the array resXor into 8 sub-blocs of length 6
-        int[][] subBlocs = decoupage(resXor, 8);
+        int[][] subBlocs = decoupage(resXor, 6);
         int[][] res = new int[8][4];
         // Apply the fonction_S to each sub-bloc and store the result in res
         for (int i = 0; i < 8; i++) {
-            res[i] = fonction_S(subBlocs[i], noRonde);
+            res[i] = fonction_S(subBlocs[i], noRonde % 8);
         }
         // Concatenate all the arrays of res into one
         int[] resConcat = recollage_bloc(res);
@@ -457,11 +468,47 @@ public class DES {
         return res;
     }
 
+    /**
+     * Crypt a String message_clair.
+     *
+     * @param message_clair the string to be crypted.
+     * @return an array of int containing the crypted message.
+     * @throws NullPointerException if message_clair is null.
+     */
     public int[] crypte(String message_clair) {
-        return null;
+        // Convert the String message_clair to binary
+        int[] text = stringToBits(message_clair);
+        // Add 0s to the end of the array text until its length is a multiple of TAILLE_BLOC (64).
+        while (text.length % TAILLE_BLOC != 0) {
+            text = Arrays.copyOf(text, text.length + 1);
+            text[text.length - 1] = 0;
+        }
+        // Split the array text into sub-blocs of length TAILLE_BLOC (64).
+        int[][] split = decoupage(text, 64);
+
+        for (int i = 0; i < split.length; i++) {
+            // Initial permutation
+            split[i] = permutation(PERM_INITIALE, split[i]);
+            int[][] GD = decoupage(split[i], TAILLE_SOUS_BLOC);
+            int[] G = GD[0];
+            int[] D = GD[1];
+
+            for (int j = 0; j < NB_RONDE; j++) {
+                genereCle(j);
+                // possibilité de generer clefs dans constructeur (plus opti)
+                int[] tmp = D;
+                D = xor(G, fonction_F(tab_cles[j], D, j));
+                G = tmp;
+            }
+            split[i] = recollage_bloc(new int[][]{D, G});
+            split[i] = invPermutation(PERM_INITIALE, split[i]);
+        }
+        System.out.println(Arrays.deepToString(split));
+        return recollage_bloc(split);
     }
 
     public String decrypte(int[] messageCodé) {
+
         return null;
     }
 
