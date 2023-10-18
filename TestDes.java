@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 public class TestDes {
     public Random random = new Random();
@@ -135,15 +136,113 @@ public class TestDes {
         }
         if (testOk) {
             System.out.println("La méthode decalle_gauche fonctionne correctement. \nLe nombre de decallage maximum effectué est de " + nbCranMax + ".");
-        }
-        else {
+        } else {
             System.out.println("Erreur de decallage gauche sur le tableau " + Arrays.toString(tab) + " et " + Arrays.toString(res) + ".");
-        };
+        }
     }
 
     public void testFonctionS() {
         // TEST EN DUR
+        int[][] test = {
+                {0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 1},
+                {0, 0, 0, 0, 1, 0},
+                {0, 0, 0, 0, 1, 1},
+                {0, 0, 0, 1, 0, 0},
+                {0, 0, 0, 1, 0, 1},
+                {0, 0, 0, 1, 1, 0},
+                {0, 0, 0, 1, 1, 1},
+                {0, 0, 1, 0, 0, 0},
+                {0, 0, 1, 0, 0, 1},
+                {0, 0, 1, 0, 1, 0},
+                {0, 0, 1, 0, 1, 1},
+                {0, 0, 1, 1, 0, 0},
+                {0, 0, 1, 1, 0, 1},
+                {0, 0, 1, 1, 1, 0},
+                {0, 0, 1, 1, 1, 1},
+                {0, 1, 0, 0, 0, 0},
+                {0, 1, 0, 0, 0, 1},
+                {0, 1, 0, 0, 1, 0},
+                {0, 1, 0, 0, 1, 1},
+                {0, 1, 0, 1, 0, 0},
+                {0, 1, 0, 1, 0, 1},
+                {0, 1, 0, 1, 1, 0},
+                {0, 1, 0, 1, 1, 1},
+                {0, 1, 1, 0, 0, 0},
+                {0, 1, 1, 0, 0, 1},
+                {0, 1, 1, 0, 1, 0},
+                {0, 1, 1, 0, 1, 1},
+                {0, 1, 1, 1, 0, 0},
+                {0, 1, 1, 1, 0, 1},
+                {0, 1, 1, 1, 1, 0},
+                {0, 1, 1, 1, 1, 1},
+                {1, 0, 0, 0, 0, 0},
+                {1, 0, 0, 0, 0, 1},
+                {1, 0, 0, 0, 1, 0},
+                {1, 0, 0, 0, 1, 1},
+                {1, 0, 0, 1, 0, 0},
+                {1, 0, 0, 1, 0, 1},
+                {1, 0, 0, 1, 1, 0},
+                {1, 0, 0, 1, 1, 1},
+                {1, 0, 1, 0, 0, 0},
+                {1, 0, 1, 0, 0, 1},
+                {1, 0, 1, 0, 1, 0},
+                {1, 0, 1, 0, 1, 1},
+                {1, 0, 1, 1, 0, 0},
+                {1, 0, 1, 1, 0, 1},
+                {1, 0, 1, 1, 1, 0},
+                {1, 0, 1, 1, 1, 1},
+                {1, 1, 0, 0, 0, 0},
+                {1, 1, 0, 0, 0, 1},
+                {1, 1, 0, 0, 1, 0},
+                {1, 1, 0, 0, 1, 1},
+                {1, 1, 0, 1, 0, 0},
+                {1, 1, 0, 1, 0, 1},
+                {1, 1, 0, 1, 1, 0},
+                {1, 1, 0, 1, 1, 1},
+                {1, 1, 1, 0, 0, 0},
+                {1, 1, 1, 0, 0, 1},
+                {1, 1, 1, 0, 1, 0},
+                {1, 1, 1, 0, 1, 1},
+                {1, 1, 1, 1, 0, 0},
+                {1, 1, 1, 1, 0, 1},
+                {1, 1, 1, 1, 1, 0},
+                {1, 1, 1, 1, 1, 1},
+        };
+        for (int i = 0; i < des.S[0][0].length * 2; i++) {
+            int[] array = des.fonction_S(test[i], 0);
+            int[] tab = des.intToBinaryArray(des.S[0][i % 2][i / 2], 4);
+            //System.out.println("noLigne = " + i%2 + " noColonne = " + i/2);
+            int[] array2 = des.fonction_S(test[i + des.S[0][0].length * 2], 0);
+            int[] tab2 = des.intToBinaryArray(des.S[0][i % 2 + 2][i / 2], 4);
+            if (!Arrays.equals(array, tab)) {
+                System.out.println("Erreur de fonction S sur le tableau " + Arrays.toString(test[i]) + " et " + Arrays.toString(array) + ".");
+            }
+            if (!Arrays.equals(array2, tab2)) {
+                System.out.println("Erreur de fonction S sur le tableau " + Arrays.toString(test[i + des.S[0][0].length * 2]) + " et " + Arrays.toString(array2) + ".");
+            }
+            //System.out.println(Arrays.toString(array));
+            //System.out.println(Arrays.toString(tab));
+            //System.out.println(i);
+        }
 
+    }
+
+    public void testCrypteDecrypte(int nombreTest) {
+        ArrayList<String> randomSentences = generateRandomSentences(100, nombreTest);
+        int i = 0;
+        boolean testOk = true;
+        while (i < nombreTest && testOk) {
+            if (randomSentences.get(i).equals(des.decrypte(des.crypte(randomSentences.get(i))))) {
+                i++;
+            } else {
+                System.out.println("Erreur de cryptage / decryptage sur la phrase " + randomSentences.get(i) + ".");
+                testOk = false;
+            }
+        }
+        if (i == nombreTest) {
+            System.out.println("La méthode crypte et decrypte fonctionnent correctement. \nLe nombre de tests reposant sur des phrases aléatoires de 100 caractères est de " + nombreTest + ".");
+        }
     }
 
     public static void main(String[] args) {
@@ -155,6 +254,8 @@ public class TestDes {
         //testDes.testIntToBinaryArray();
         //testDes.testXor(100);
         testDes.testDecallageGauche();
+        testDes.testCrypteDecrypte(100);
+        testDes.testFonctionS();
     }
     /* test =>
     conversion ok
@@ -162,7 +263,7 @@ public class TestDes {
     decallage gauche ok
     xor => xor xor = base ok
     fonction s not ok
-    crypte decrypte
+    crypte decrypte ok
     gerer exceptions tests à la fin
      */
 }

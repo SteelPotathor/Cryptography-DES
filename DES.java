@@ -127,6 +127,10 @@ public class DES {
         }
         // Create an array to store keys
         this.tab_cles = new int[16][48];
+        // Generate the 16 sub-keys
+        for (int i = 0; i < 16; i++) {
+            genereCle(i);
+        }
     }
 
     /**
@@ -255,7 +259,7 @@ public class DES {
         int[][] res = new int[nbBlocs][tailleBlocs];
         // Cut the array bloc in nbBlocs of equal size and store every sub-bloc in the 2D array res
         for (int i = 0; i < nbBlocs; i++) {
-            // Copy the bloc from bloc[i * taille_sous_bloc] to bloc[i * taille_sous_bloc + taille_sous_bloc - 1] included and store it in res[i]
+            // Copy the bloc from bloc[i * tailleBlocs] to bloc[i * tailleBlocs + tailleBlocs - 1] included and store it in res[i]
             System.arraycopy(bloc, i * tailleBlocs, res[i], 0, tailleBlocs);
         }
         return res;
@@ -273,7 +277,7 @@ public class DES {
         int taille_bloc = blocs[0].length;
         int[] res = new int[nb_blocs * taille_bloc];
         for (int i = 0; i < nb_blocs; i++) {
-            // Copy the bloc from blocs[i] to res[i * taille_bloc] included and store it in res
+            // Copy the bloc from blocs[i][0] to blocs[i][taille_bloc - 1] included and store it in res[i * taille_bloc]
             System.arraycopy(blocs[i], 0, res, i * taille_bloc, taille_bloc);
         }
         return res;
@@ -281,7 +285,7 @@ public class DES {
 
 
     /**
-     * Generate the n-ith key. It is the result of the permutation PC2 applied to the result of the permutation PC1 applied to the master key. The master key is first permuted according to PC1 and then split into two halves. Each half is rotated to the left by a certain number of bits (TAB_DECALAGE[n]). Then, the two halves are concatenated and permuted according to PC2. The result is the n-ith key. It is then stored in the array tab_cles at the index n.
+     * Generate the key at the index n of tab_cles. The master key is permuted according to PC1 and then split into two halves. Each half is rotated to the left by a certain number of bits (TAB_DECALAGE[n]) depending on the round. The two halves are then concatenated and permuted according to PC2. The result is stored in tab_cles at the index n.
      *
      * @param n the index of the key to be generated.
      * @throws IllegalArgumentException if n < 0 || n > 15.
@@ -300,44 +304,8 @@ public class DES {
         split_permuted_key[1] = decalle_gauche(split_permuted_key[1], TAB_DECALAGE[n]);
         // Concatenate the two halves
         int[] bloc_recolle = recollage_bloc(split_permuted_key);
-        // Permute the result according to PC2
-        int[] key = permutation(PC2, bloc_recolle);
-        tab_cles[n] = key;
-
-        /*
-        int[] permutation = generePermutation(masterKey.length);
-        int[] clePermute = permutation(permutation, masterKey);
-        int[] res = new int[56];
-        int decalle1 = 0;
-        for (int i = 0; i < masterKey.length; i++) {
-            if (i != 8 && i != 16 && i != 24 && i != 32 && i != 40 && i != 48 && i != 56 && i != 64) {
-                res[i - decalle1] = clePermute[i];
-            } else {
-                decalle1++;
-            }
-
-        }
-        // Split the array res into two halves
-        int[][] blocs_decoupes = decoupage(res, 2);
-        // Rotate the two halves to the left by a certain number of bits (TAB_DECALAGE[n])
-        int[] bloc1 = decalle_gauche(blocs_decoupes[0], TAB_DECALAGE[n]);
-        int[] bloc2 = decalle_gauche(blocs_decoupes[1], TAB_DECALAGE[n]);
-        int[][] blocs_groupe = new int[2][];
-        blocs_groupe[0] = bloc1;
-        blocs_groupe[1] = bloc2;
-        int[] bloc_recolle = recollage_bloc(blocs_groupe);
-        int[] bloc_48_bits = new int[48];
-        int decalle2 = 0;
-        for (int i = 0; i < 48; i++) {
-            if (i != 9 && i != 18 && i != 22 && i != 25 && i != 35 && i != 38 && i != 43) {
-                bloc_48_bits[i - decalle2] = bloc_recolle[i];
-            } else {
-                decalle2++;
-            }
-        }
-        int[] finalKey = permutation(PC2, bloc_48_bits);
-        this.tab_cles[n] = finalKey;
-         */
+        // Permute the result according to PC2 and store it in tab_cles at the index n
+        tab_cles[n] = permutation(PC2, bloc_recolle);
     }
 
     /**
@@ -412,7 +380,7 @@ public class DES {
         // The 4 bits in the middle are used to determine the column of the array S
         // We shift the second bit of tab to the left by 3. Then we shift the third bit of tab to the left by 2. Then we shift the fourth bit of tab to the left by 1. Then we add the fifth bit of tab
         int noColonne = tab[1] << 3 | tab[2] << 2 | tab[3] << 1 | tab[4];
-        // Get the int corresponding to the line noLigne and the column noColonne of the array S
+        // Get the int corresponding to the line noLigne and the column noColonne of the array S[noRonde]
         int numberToConvert = S[noRonde][noLigne][noColonne];
         // Convert the int to binary and store it in a 1D array of length 4
         return intToBinaryArray(numberToConvert, 4);
@@ -420,13 +388,20 @@ public class DES {
 
 
     /**
-     * @param uneCle
-     * @param unD
-     * @return
-     * @throws NullPointerException     if tab is null.
-     * @throws IllegalArgumentException if tab.length != 6.
+     * Apply the function F to unD. The array unD is first permuted according to E. Then, XOR is applied between uneCle and unD. The result is split into 8 sub-blocs of length 6. Each sub-bloc is then used as a parameter for the fonction_S. The result of each fonction_S is stored in a 2D-array which will be concatenated into a 1D-array. This array is permuted according to P and the result is returned.
+     *
+     * @param uneCle  a key contained in tab_cles (an array of int of length 48), it contains only 0 or 1.
+     * @param unD     the array of int to be used in the function F (length of the array = 32), it contains only 0 or 1.
+     * @param noRonde the index of the round.
+     * @return an array of length 32 (result of the function F to unD).
+     * @throws NullPointerException     if uneCle or unD is null.
+     * @throws IllegalArgumentException if unD.length != 32.
      */
     public int[] fonction_F(int[] uneCle, int[] unD, int noRonde) {
+        // Preconditions
+        if (unD.length != 32) {
+            throw new IllegalArgumentException("The length of unD must be equal to 32: " + unD.length + " != " + 32 + ".");
+        }
         int[] unDprime = permutation(E, unD);
         // Xor between uneCle and unD
         int[] resXor = xor(uneCle, unDprime);
@@ -469,7 +444,7 @@ public class DES {
     }
 
     /**
-     * Crypt a String message_clair.
+     * Crypt a String message_clair with the DES algorithm.
      *
      * @param message_clair the string to be crypted.
      * @return an array of int containing the crypted message.
@@ -478,38 +453,68 @@ public class DES {
     public int[] crypte(String message_clair) {
         // Convert the String message_clair to binary
         int[] text = stringToBits(message_clair);
-        // Add 0s to the end of the array text until its length is a multiple of TAILLE_BLOC (64).
-        while (text.length % TAILLE_BLOC != 0) {
-            text = Arrays.copyOf(text, text.length + 1);
-            text[text.length - 1] = 0;
-        }
+        //System.out.println(Arrays.toString(text));
+        // Create an array of length multiple of TAILLE_BLOC (64) and fill it with 0s
+        int[] text64 = new int[(text.length / 64) * 64 + 64];
+        // Copy the array text in the array text64 (with 0s at the beginning) in order to have an array of length multiple of TAILLE_BLOC (64)
+        System.arraycopy(text, 0, text64, 64 - text.length % 64, text.length);
+        //System.out.println("Message binaire = " + Arrays.toString(text));
+        //System.out.println("Message avec des 0 au début = " +Arrays.toString(text64));
         // Split the array text into sub-blocs of length TAILLE_BLOC (64).
-        int[][] split = decoupage(text, 64);
+        int[][] split = decoupage(text64, TAILLE_BLOC);
 
         for (int i = 0; i < split.length; i++) {
             // Initial permutation
             split[i] = permutation(PERM_INITIALE, split[i]);
+            // Split the array split[i] into two halves
             int[][] GD = decoupage(split[i], TAILLE_SOUS_BLOC);
             int[] G = GD[0];
             int[] D = GD[1];
-
             for (int j = 0; j < NB_RONDE; j++) {
-                genereCle(j);
-                // possibilité de generer clefs dans constructeur (plus opti)
                 int[] tmp = D;
                 D = xor(G, fonction_F(tab_cles[j], D, j));
                 G = tmp;
             }
-            split[i] = recollage_bloc(new int[][]{D, G});
+            // Concatenate the two halves (G, D)
+            split[i] = recollage_bloc(new int[][]{G, D});
+            // Final permutation (cancel the initial permutation)
             split[i] = invPermutation(PERM_INITIALE, split[i]);
         }
-        System.out.println(Arrays.deepToString(split));
         return recollage_bloc(split);
     }
 
+    /**
+     * Decrypt a message codé with the DES algorithm.
+     *
+     * @param messageCodé the array of int to be decrypted.
+     * @return a String containing the decrypted message.
+     */
     public String decrypte(int[] messageCodé) {
-
-        return null;
+        // Split the array messageCodé into sub-blocs of length TAILLE_BLOC (64).
+        //System.out.println(Arrays.toString(messageCodé));
+        int[][] split = decoupage(messageCodé, 64);
+        //System.out.println(Arrays.deepToString(split));
+        // For each sub-bloc
+        for (int i = 0; i < split.length; i++) {
+            // Initial permutation
+            split[i] = permutation(PERM_INITIALE, split[i]);
+            // Split the array split[i] into two halves
+            int[][] GD = decoupage(split[i], TAILLE_SOUS_BLOC);
+            int[] G = GD[0];
+            int[] D = GD[1];
+            for (int j = NB_RONDE - 1; j > -1; j--) {
+                int[] tmp = D;
+                D = G;
+                G = xor(tmp, fonction_F(tab_cles[j], D, j));
+            }
+            // Concatenate the two halves (G, D)
+            split[i] = recollage_bloc(new int[][]{G, D});
+            // Final permutation (cancel the initial permutation)
+            split[i] = invPermutation(PERM_INITIALE, split[i]);
+        }
+        int[] messageBinary = recollage_bloc(split);
+        //System.out.println(Arrays.toString(messageBinary));
+        return bitsToString(messageBinary);
     }
 
 }
