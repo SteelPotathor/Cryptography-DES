@@ -221,9 +221,6 @@ public class TestDes {
             if (!Arrays.equals(array2, tab2)) {
                 System.out.println("Erreur de fonction S sur le tableau " + Arrays.toString(test[i + des.S[0][0].length * 2]) + " et " + Arrays.toString(array2) + ".");
             }
-            //System.out.println(Arrays.toString(array));
-            //System.out.println(Arrays.toString(tab));
-            //System.out.println(i);
         }
 
     }
