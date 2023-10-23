@@ -82,7 +82,6 @@ public class GUI implements WindowListener, MouseListener {
     public void mouseClicked(MouseEvent e) {
         // pb de même instance sinon decodage incorrect
         if (e.getSource() == this.crypte) {
-            System.out.println("Crypte");
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Choisir un fichier");
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
@@ -132,7 +131,6 @@ public class GUI implements WindowListener, MouseListener {
                     throw new RuntimeException(ex);
                 }
             }
-            System.out.println("Decrypte");
         }
     }
 

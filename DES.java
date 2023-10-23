@@ -453,13 +453,10 @@ public class DES {
     public int[] crypte(String message_clair) {
         // Convert the String message_clair to binary
         int[] text = stringToBits(message_clair);
-        //System.out.println(Arrays.toString(text));
         // Create an array of length multiple of TAILLE_BLOC (64) and fill it with 0s
         int[] text64 = new int[(text.length / 64) * 64 + 64];
         // Copy the array text in the array text64 (with 0s at the beginning) in order to have an array of length multiple of TAILLE_BLOC (64)
         System.arraycopy(text, 0, text64, 64 - text.length % 64, text.length);
-        //System.out.println("Message binaire = " + Arrays.toString(text));
-        //System.out.println("Message avec des 0 au début = " +Arrays.toString(text64));
         // Split the array text into sub-blocs of length TAILLE_BLOC (64).
         int[][] split = decoupage(text64, TAILLE_BLOC);
 
@@ -491,9 +488,7 @@ public class DES {
      */
     public String decrypte(int[] messageCodé) {
         // Split the array messageCodé into sub-blocs of length TAILLE_BLOC (64).
-        //System.out.println(Arrays.toString(messageCodé));
         int[][] split = decoupage(messageCodé, 64);
-        //System.out.println(Arrays.deepToString(split));
         // For each sub-bloc
         for (int i = 0; i < split.length; i++) {
             // Initial permutation
@@ -513,7 +508,6 @@ public class DES {
             split[i] = invPermutation(PERM_INITIALE, split[i]);
         }
         int[] messageBinary = recollage_bloc(split);
-        //System.out.println(Arrays.toString(messageBinary));
         return bitsToString(messageBinary);
     }
 

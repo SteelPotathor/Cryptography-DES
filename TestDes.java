@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
-import java.util.stream.IntStream;
 
 public class TestDes {
     public Random random = new Random();
@@ -142,7 +141,7 @@ public class TestDes {
     }
 
     public void testFonctionS() {
-        // TEST EN DUR
+        // On regarde si la fonction S fonctionne correctement sur les 64 possibilités de 6 bits sur le tableau S[0].
         int[][] test = {
                 {0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 1},
@@ -212,7 +211,6 @@ public class TestDes {
         for (int i = 0; i < des.S[0][0].length * 2; i++) {
             int[] array = des.fonction_S(test[i], 0);
             int[] tab = des.intToBinaryArray(des.S[0][i % 2][i / 2], 4);
-            //System.out.println("noLigne = " + i%2 + " noColonne = " + i/2);
             int[] array2 = des.fonction_S(test[i + des.S[0][0].length * 2], 0);
             int[] tab2 = des.intToBinaryArray(des.S[0][i % 2 + 2][i / 2], 4);
             if (!Arrays.equals(array, tab)) {
