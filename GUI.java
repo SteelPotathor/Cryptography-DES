@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -13,30 +14,30 @@ import java.util.Scanner;
 
 public class GUI implements WindowListener, MouseListener {
 
-    public Frame frame;
-    public Label label;
-    public Button crypte;
-    public Button decrypte;
-    public DES des;
+    public JFrame frame;
+    public JLabel label;
+    public JButton crypte;
+    public JButton decrypte;
+    public TripleDES tripleDES;
 
     public GUI() {
-        this.frame = new Frame("DES");
+        this.frame = new JFrame("TripleDES");
         this.frame.addWindowListener(this);
-        this.frame.setLayout(new BorderLayout());
+        this.frame.setLayout(new FlowLayout());
         this.frame.setSize(500, 500);
 
-        this.label = new Label("Logiciel de cryptage/decryptage DES");
-        this.crypte = new Button("Crypter");
-        this.decrypte = new Button("Decrypter");
+        this.label = new JLabel("Cryptage/Decryptage DES");
+        this.crypte = new JButton("Crypter");
+        this.decrypte = new JButton("Decrypter");
         this.crypte.addMouseListener(this);
         this.decrypte.addMouseListener(this);
 
-        this.frame.add(this.label, BorderLayout.NORTH);
-        this.frame.add(this.crypte, BorderLayout.WEST);
-        this.frame.add(this.decrypte, BorderLayout.EAST);
+        this.frame.add(this.label);
+        this.frame.add(this.crypte);
+        this.frame.add(this.decrypte);
 
         this.frame.setVisible(true);
-        this.des = new DES();
+        this.tripleDES = new TripleDES();
     }
 
     public static void main(String[] args) {
@@ -80,14 +81,14 @@ public class GUI implements WindowListener, MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        // pb de même instance sinon decodage incorrect
         if (e.getSource() == this.crypte) {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Choisir un fichier");
+            fileChooser.setFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
             int response = fileChooser.showOpenDialog(null);
-
             if (response == JFileChooser.APPROVE_OPTION) {
+                String parent = fileChooser.getSelectedFile().getParent();
                 File file = new File(fileChooser.getSelectedFile().getAbsolutePath());
                 Scanner scanner = null;
                 try {
@@ -100,8 +101,8 @@ public class GUI implements WindowListener, MouseListener {
                     text.append(scanner.nextLine()).append("\n");
                 }
                 try {
-                    FileWriter fileWriter = new FileWriter(file.getName() + "_crypte.txt");
-                    fileWriter.write(Arrays.toString(this.des.crypte(String.valueOf(text))));
+                    FileWriter fileWriter = new FileWriter(new File(parent, file.getName().substring(0, file.getName().length() - 4) + "_crypte.txt"));
+                    fileWriter.write(Arrays.toString(this.tripleDES.cryptage(String.valueOf(text))));
                     fileWriter.close();
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
@@ -111,9 +112,11 @@ public class GUI implements WindowListener, MouseListener {
         } else if (e.getSource() == this.decrypte) {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Choisir un fichier");
+            fileChooser.setFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
             int response = fileChooser.showOpenDialog(null);
             if (response == JFileChooser.APPROVE_OPTION) {
+                String parent = fileChooser.getSelectedFile().getParent();
                 File file = new File(fileChooser.getSelectedFile().getAbsolutePath());
                 Scanner scanner = null;
                 try {
@@ -123,9 +126,9 @@ public class GUI implements WindowListener, MouseListener {
                 }
                 String text = scanner.nextLine();
                 try {
-                    FileWriter fileWriter = new FileWriter(file.getName() + "_decrypte.txt");
+                    FileWriter fileWriter = new FileWriter(new File(parent, file.getName().substring(0, file.getName().length()-4) + "_decrypte.txt"));
                     int[] textInt = Arrays.stream(text.substring(1, text.length() - 1).split(", ")).mapToInt(Integer::parseInt).toArray();
-                    fileWriter.write(this.des.decrypte(textInt));
+                    fileWriter.write(this.tripleDES.decryptage(textInt));
                     fileWriter.close();
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);

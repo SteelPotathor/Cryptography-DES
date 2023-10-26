@@ -110,8 +110,8 @@ public class DES {
             1, 7, 23, 13, 31, 26, 2, 8,
             18, 12, 29, 5, 21, 10, 3, 24
     };
-    public int[] masterKey;
-    public int[][] tab_cles;
+    public final int[] masterKey;
+    public final int[][] tab_cles;
     public Random random = new Random();
 
 
@@ -174,7 +174,6 @@ public class DES {
     }
 
     /**
-     * DEVIENT GENEREMASTERKEY mais garder celle ci et creer une autre methode
      * Create an array of length taille and fill it with the numbers from 0 to taille - 1 included (array[i] = i). Then, it randomly permutes the elements of the array and returns it.
      *
      * @param taille the size of the permuted array.

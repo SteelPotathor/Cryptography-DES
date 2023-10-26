@@ -1,0 +1,8 @@
+Améliorer le GUI -> visuel legerement plus beau
+Share les cles afin de rendre le decryptage possible qu'importe l'instance
+Revoir les comms / exceptions et tests
+Compte-rendu
+
+Je n'ai pas de methode genereMasterKey car je l'ai implémenté dans le constructeur de DES
+
+test fonction s check avec le j
