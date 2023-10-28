@@ -2,6 +2,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
+/**
+ * This class is used to test the DES class
+ */
 public class TestDes {
     public Random random = new Random();
     public DES des = new DES();
@@ -87,7 +90,7 @@ public class TestDes {
 
 
     /**
-     * Test of permutation and invPermutation methods. We generate random permutations, and we check that the permutation of the permutation is equal to the initial permutation. The maximum size of the permutation is 1024 bits.
+     * Test of permutation and invPermutation methods. We generate random permutations, and we check that the inverse permutation of the permutation is equal to the initial permutation. The maximum size of the permutation is 1024 bits.
      *
      * @param nombreTest the number of tests
      */
@@ -355,6 +358,13 @@ public class TestDes {
         testDes.testXor(1000);
         testDes.testFonctionS();
         testDes.testCrypteDecrypte(100);
+
+
+
+        DES des = new DES();
+        int[] conversion = des.stringToBits("Bonjour, I love 冰淇淋! Особенно если холодно, voici mon mail: (-è&@ç_çà.comique). " +
+                "Ces caractères fonctionnent aussi par ailleurs éèàçùôîûêâïüëöäÿç");
+        System.out.println(des.bitsToString(conversion));
 
     }
 }

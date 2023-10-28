@@ -2,6 +2,9 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Random;
 
+/**
+ * This class is used to crypt and decrypt a message using the DES algorithm
+ */
 public class DES {
     public static final int TAILLE_BLOC = 64;
     public static final int TAILLE_SOUS_BLOC = 32;
@@ -201,7 +204,7 @@ public class DES {
     }
 
     /**
-     * Shuffle bloc according to tab_permutation (The element at the index i of bloc will be moved to the index tab_permutation[i] of the returning array). The two arrays must be of equal size.
+     * Shuffle bloc according to tab_permutation (The element at the index i of bloc will be moved to the index tab_permutation[i] of the returning array).
      *
      * @param tab_permutation the array created by the method generePermutation.
      * @param bloc            the array of int to be permuted.
@@ -254,7 +257,7 @@ public class DES {
         if (tailleBlocs <= 0) {
             throw new IllegalArgumentException("The length of blocs must be positive: " + tailleBlocs + " <= " + 0 + ".");
         }
-        int nbBlocs = bloc.length / tailleBlocs; // Precondition ou bloc % tailleBlocs = 0 potentiellement
+        int nbBlocs = bloc.length / tailleBlocs;
         int[][] res = new int[nbBlocs][tailleBlocs];
         // Cut the array bloc in nbBlocs of equal size and store every sub-bloc in the 2D array res
         for (int i = 0; i < nbBlocs; i++) {
