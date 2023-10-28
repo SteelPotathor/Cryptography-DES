@@ -150,6 +150,7 @@ public class GUI implements WindowListener, MouseListener {
                 try {
                     // Write the decrypted message in a new file
                     FileWriter fileWriter = new FileWriter(new File(parent, file.getName().substring(0, file.getName().length() - 4) + "_decrypte.txt"));
+                    // This method converts a String to an array of ints
                     int[] textInt = Arrays.stream(text.substring(1, text.length() - 1).split(", ")).mapToInt(Integer::parseInt).toArray();
                     fileWriter.write(this.tripleDES.decryptage(textInt));
                     fileWriter.close();

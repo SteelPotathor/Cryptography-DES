@@ -24,6 +24,7 @@ public class TripleDES {
      * @param messageClair the message to crypt
      * @return the crypted message (array of int)
      * @throws NullPointerException if the messageClair is null
+     * @throws NumberFormatException if the messageCrypte is an empty string
      */
     public int[] cryptage(String messageClair) {
         int[] premierCryptage = this.des1.crypte(messageClair);
@@ -37,6 +38,7 @@ public class TripleDES {
      * @param messageCrypte the message to decrypt
      * @return the decrypted message
      * @throws NullPointerException if the messageCrypte is null
+     * throws ArrayIndexOutOfBoundsException if the messageCrypte is an empty array
      */
     public String decryptage(int[] messageCrypte) {
         String decryptage1 = this.des3.decrypte(messageCrypte);
@@ -46,10 +48,5 @@ public class TripleDES {
         // This method converts a String to an array of ints
         int[] cryptage1 = Arrays.stream(decryptage2.substring(1, decryptage2.length() - 1).split(", ")).mapToInt(Integer::parseInt).toArray();
         return this.des1.decrypte(cryptage1);
-    }
-
-    public static void main(String[] args) {
-        TripleDES tripleDES = new TripleDES();
-        System.out.println(tripleDES.decryptage(tripleDES.cryptage(" 我喜欢冰淇淋 漢字  漢字   かんじ  Bonjour à tous, j'aime les frites et ouais mon gars d'ailleurs je suis le coiffeur le moins cher de l'île!")));
     }
 }

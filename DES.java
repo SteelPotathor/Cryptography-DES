@@ -1,5 +1,4 @@
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -245,7 +244,7 @@ public class DES {
     }
 
     /**
-     * Cut an array bloc in nbBlocs of "equal size" and store sub-blocs in a 2D array. This method will only be used if nbBlocs is a multiple of bloc.length. Moreover, nbBlocs must be positive and less than the length of bloc.
+     * Cut an array bloc in nbBlocs of "equal size" and store sub-blocs in a 2D array. This method will only be used if nbBlocs is a multiple of bloc.length. Moreover, the tailleBloc must be a multiple of bloc.length.
      *
      * @param bloc        the array of int to be cut.
      * @param tailleBlocs the length of the sub-blocs.

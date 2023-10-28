@@ -9,6 +9,9 @@ public class TestDes {
     public Random random = new Random();
     public DES des = new DES();
 
+    /**
+     * Testing exceptions of the stringToBits method. We check that the method stringToBits does not work with empty and null Strings.
+     */
     public void testExceptionStringToBits() {
         System.out.println("Test de la méthode stringToBits avec les Strings vides et nulles:");
 
@@ -28,6 +31,9 @@ public class TestDes {
         System.out.println();
     }
 
+    /**
+     * Testing exceptions of the bitsToString method. We check that the method bitsToString does not work with empty and null arrays.
+     */
     public void testExceptionBitsToString() {
         System.out.println("Test de la méthode bitsToStrings avec des tableaux de taille 0 et nuls:");
 
@@ -298,6 +304,7 @@ public class TestDes {
         boolean testOk = true;
         int i = 0;
         while (i < des.S[0][0].length * 2 && testOk) {
+            // We check that the function S will return the correct value for each of the 64 possibilities of 6 bits on the table S[0]
             int[] array = des.fonction_S(test[i], 0);
             int[] tab = des.intToBinaryArray(des.S[0][i % 2][i / 2], 4);
             int[] array2 = des.fonction_S(test[i + des.S[0][0].length * 2], 0);
@@ -357,14 +364,6 @@ public class TestDes {
         testDes.testDecallageGauche();
         testDes.testXor(1000);
         testDes.testFonctionS();
-        testDes.testCrypteDecrypte(100);
-
-
-
-        DES des = new DES();
-        int[] conversion = des.stringToBits("Bonjour, I love 冰淇淋! Особенно если холодно, voici mon mail: (-è&@ç_çà.comique). " +
-                "Ces caractères fonctionnent aussi par ailleurs éèàçùôîûêâïüëöäÿç");
-        System.out.println(des.bitsToString(conversion));
-
+        testDes.testCrypteDecrypte(1000);
     }
 }
